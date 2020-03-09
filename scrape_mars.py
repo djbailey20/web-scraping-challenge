@@ -6,26 +6,34 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import requests
 from pprint import pprint
+import time
+
+
+executable_path = {"executable_path": "driver/chromedriver.exe"}
+browser = Browser("chrome", **executable_path, headless=True)
 
 
 def scrape():
-    executable_path = {"executable_path": "driver/chromedriver.exe"}
-    browser = Browser("chrome", **executable_path, headless=False)
-
     url = "https://mars.nasa.gov/news/?page=0&per_page=40&order=publish_date+desc%2Ccreated_at+desc&search=&category=19%2C165%2C184%2C204&blank_scope=Latest"
     browser.visit(url)
     html = browser.html
-    soup = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(html, "lxml")
+    for i in range(10):
+        try:
+            first_article = soup.find(
+                "div", class_="image_and_description_container")
 
-    first_article = soup.find("div", class_="image_and_description_container")
+            news_title = first_article.find("div", class_="content_title").text
+            news_title
 
-    first_article
-
-    news_title = first_article.find("div", class_="content_title").text
-    news_title
-
-    news_p = first_article.find("div", class_="article_teaser_body").text
-    news_p
+            news_p = first_article.find(
+                "div", class_="article_teaser_body").text
+            news_p
+        except:
+            time.sleep(.5)
+            print("this failed")
+        else:
+            break
 
     url = "https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars"
     browser.visit(url)
@@ -41,15 +49,13 @@ def scrape():
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "lxml")
 
-    soup
-
-    mars_weather = soup.find('p', class_="js-tweet-text").text
+    mars_weather = soup.find(
+        'p', class_="js-tweet-text").text.split("pic.twitter")[0].split("InSight ")[-1]
+    mars_weather
 
     url = "https://space-facts.com/mars/"
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "lxml")
-
-    soup
 
     mars_facts_table = str(soup.find(id="tablepress-p-mars"))
 
@@ -70,12 +76,11 @@ def scrape():
         browser.back()
         hemisphere_image_urls.append(temp)
 
-    hemisphere_image_urls
-
     return({
         "news_title": news_title,
         "news_p": news_p,
-        "featured_image_url": deatured_image_url,
+        "featured_image_url": featured_image_url,
         "mars_weather": mars_weather,
-        "hemispher_image_urls": hemisphere_image_urls
+        "mars_facts_table": mars_facts_table,
+        "hemisphere_image_urls": hemisphere_image_urls
     })
