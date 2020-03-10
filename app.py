@@ -11,12 +11,6 @@ mongo = PyMongo(app)
 @app.route("/")
 def home():
     data = mongo.db.mars_data.find_one()
-    # news_title = data["news_title"]
-    # news_p = data["news_p"]
-    # featured_image_url = data["featured_image_url"]
-    # mars_weather = data["mars_weather"]
-    # mars_facts_table = data["mars_facts_table"]
-    # hemisphere_image_urls = data["hemisphere_image_urls"]
     return render_template("index.html", mars=data)
 
 
