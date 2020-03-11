@@ -7,6 +7,7 @@ from datetime import datetime
 import requests
 from pprint import pprint
 import time
+import pandas as pd
 
 
 executable_path = {"executable_path": "driver/chromedriver.exe"}
@@ -18,7 +19,9 @@ def scrape():
     browser.visit(url)
     html = browser.html
     soup = BeautifulSoup(html, "html5lib")
-    for i in range(10):
+
+    time.sleep(1.5)
+    for _ in range(10):
         try:
             first_article = soup.find(
                 "div", class_="image_and_description_container")
@@ -30,7 +33,6 @@ def scrape():
                 "div", class_="article_teaser_body").text
             news_p
         except:
-            time.sleep(.5)
             print("this failed")
         else:
             break
@@ -49,15 +51,29 @@ def scrape():
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "lxml")
 
-    mars_weather = soup.find(
-        'p', class_="js-tweet-text").text.split("pic.twitter")[0].split("InSight ")[-1]
+    # mars_weather = soup.find(
+    #     'p', class_="js-tweet-text").text.split("pic.twitter")[0].split("InSight ")[-1]
+    mars_weather = ""
+    data = soup.find_all('p', class_="js-tweet-text")
+    for info in data:
+        print(info.text)
+        print("-----------------------------------------------")
+        if "InSight " in info.text:
+            mars_weather = info.text.split("pic.twitter")[
+                0].split("InSight ")[-1]
+            break
     mars_weather
 
     url = "https://space-facts.com/mars/"
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "lxml")
+    # response = requests.get(url)
+    # soup = BeautifulSoup(response.text, "lxml")
+    # mars_facts_table = str(soup.find(id="tablepress-p-mars"))
+    table = pd.read_html(url)[0]
 
-    mars_facts_table = str(soup.find(id="tablepress-p-mars"))
+    table = table.rename(columns={0: "Description", 1: "Value"})
+    table.set_index("Description", inplace=True)
+
+    mars_facts_table = table.to_html()
 
     url = "https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
     browser.visit(url)
