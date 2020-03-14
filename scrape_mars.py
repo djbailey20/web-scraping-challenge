@@ -17,10 +17,10 @@ browser = Browser("chrome", **executable_path, headless=True)
 def scrape():
     url = "https://mars.nasa.gov/news/?page=0&per_page=40&order=publish_date+desc%2Ccreated_at+desc&search=&category=19%2C165%2C184%2C204&blank_scope=Latest"
     browser.visit(url)
+    time.sleep(2)
     html = browser.html
     soup = BeautifulSoup(html, "html5lib")
 
-    time.sleep(1.5)
     for _ in range(10):
         try:
             first_article = soup.find(
